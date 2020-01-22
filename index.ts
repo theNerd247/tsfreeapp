@@ -1,14 +1,23 @@
 interface Tagged<T> { _tag : T }
 
-interface PatchA<A> extends Tagged<"PatchA"> 
+type Key = string | number
+
+interface PatchV<A> extends Tagged<"PatchV">
   { newVal : A
   }
 
-const patch_ = <A>(newVal : A) : PatchA<A> => (
-  { _tag : "PatchA"
+const patchV_ = <A>(newVal : A) : PatchV<A> => (
+  { _tag : "PatchV"
   , newVal
   }
 )
+
+const mapPatchV = <A, B>(p : PatchV<A>, f : (a : A) => B) : PatchV<B> =>
+  patchV_(f(p.newVal))
+
+type PatchA<A> = PatchV<A>
+
+const mapPatchA : <A,B>(p : PatchA<A>, f : (a : A) => B) => PatchA<B> = mapPatchV
 
 interface Pure<A,B> extends Tagged<"Pure"> 
   { val : A
@@ -20,10 +29,10 @@ const pure_ = <A,B>(val : A) : Pure<A,B> => (
   }
 )
 
-interface ApE<A,B> extends Tagged<"Ap"> {
-  val : PatchA<(b : B) => A>
-  apB : Ap<B>
-}
+interface ApE<A,B> extends Tagged<"Ap"> 
+  { val : PatchA<(b : B) => A>
+    apB : Ap<B>
+  }
 
 const apE_ = <A,B>(val : PatchA<(b : B) => A>, apB : Ap<B>) : ApE<A,B> => (
   { _tag : "Ap"
@@ -39,14 +48,16 @@ type Ap<A> = <R>(cont : <X>(t : ApF<A,X>) => R) => R
 const liftApF = <A,B>(apF : ApF<A,B>) : Ap<A> => 
   <R>(cont : <X>(t : ApF<A,X>) => R) => cont(apF)
 
+const asConst = <A>(a : A) => <B=never>(b : B) : A => a
+
 const pure = <A>(a : A) : Ap<A> => 
   liftApF(pure_(a))
 
 const apE = <A,B>(val : PatchA<(b : B) => A>, f : Ap<B>) : Ap<A> =>
   liftApF(apE_(val, f))
 
-const mapPatchA = <A,B>(pa : PatchA<A>, f : (a : A) => B) : PatchA<B> =>
-  patch_(f(pa.newVal))
+const liftPatch = <A>(p : PatchA<A>) : Ap<A> =>
+  apE(mapPatchA(p, asConst), pure(null))
 
 const compose = <A,B,C>(g : (b : B) => C) => (f : (a : A) => B) => (a :A) : C =>
   g(f(a))
@@ -69,3 +80,31 @@ const ap = <A,B>(aa : Ap<A>, ff : Ap<(a : A) => B>) : Ap<B> =>
       f._tag == "Pure" ? mapAp(aa, f.val)
     : apE(mapPatchA(f.val, uncurry), pairAp(f.apB, aa))
   )
+
+// Currently this is not implementable as our functor (PatchA) is the identity
+// functor. The free applicative of the identity functor is 
+//
+//const patchToString = <A>(ap : Ap<A>) : string =>
+//  ap(<B>(a : ApF<A,B>) =>
+//    a._tag == "Pure" ? ""
+//    :                  a.
+//  )
+
+interface Foo
+  { x : string
+  , y : number
+  , z : boolean
+  }
+
+const patch = <A>(newVal : A) : Ap<A> => 
+  liftPatch(patchV_(newVal))
+
+const patchWith = <A,B>(newVal : A, f : (a : A) => B) : Ap<B> =>
+  mapAp(patch(newVal), f)
+
+const patchStr : (newVal : string) =>   Ap<string>  = patch
+const patchNum : (newVal : number) =>   Ap<number>  = patch
+const patchBool : (newVal : boolean) => Ap<boolean> = patch
+
+const patchX = (newVal : string) : Ap<{ x : string }> =>
+  patchWith(newVal, (x) => ({ x }))
