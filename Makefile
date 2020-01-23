@@ -1,2 +1,2 @@
 all:
-	tsc
+	npm run build
