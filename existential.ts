@@ -12,11 +12,11 @@ export interface Existential2<F extends URIS2, A>
   }
 
 export interface Existential3<F extends URIS3, A, B>
-  { runExt : <R>(cont : <E>(t : Kind3<F,A, B, E>) => R) => R
+  { runExt : <R>(cont : <E>(t : Kind3<F, A, B, E>) => R) => R
   }
   
 export interface Existential4<F extends URIS4, A, B, C>
-  { runExt : <R>(cont : <E>(t : Kind4<F,A, B, C, E>) => R) => R
+  { runExt : <R>(cont : <E>(t : Kind4<F, A, B, C, E>) => R) => R
   }
   
   
