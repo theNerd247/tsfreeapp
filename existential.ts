@@ -1,8 +1,5 @@
 import { Kind, Kind2, Kind3, Kind4, URIS, URIS2, URIS3, URIS4 } from 'fp-ts/lib/HKT'
 
-const URI = "Existential"
-type URI = typeof URI
-
 export interface Existential<F extends URIS>
   { runExt : <R>(cont : <E>(t : Kind<F, E>) => R) => R
   }
@@ -18,8 +15,7 @@ export interface Existential3<F extends URIS3, A, B>
 export interface Existential4<F extends URIS4, A, B, C>
   { runExt : <R>(cont : <E>(t : Kind4<F, A, B, C, E>) => R) => R
   }
-  
-  
+
 export function liftExt<F extends URIS4,A,B,C,E>(x : Kind4<F,A,B,C,E>) : Existential4<F,A,B,C> 
 export function liftExt<F extends URIS3,A,B,E>(x : Kind3<F,A,B,E>) : Existential3<F,A,B>
 export function liftExt<F extends URIS2,A,E>(x : Kind2<F,A,E>) : Existential2<F,A> 
