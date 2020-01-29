@@ -9,7 +9,8 @@
   "dependencies": {
     "@types/node": "^13.1.8",
     "fp-ts": "^2.4.1",
-    "fp-ts-contrib": "^0.1.9"
+    "fp-ts-contrib": "^0.1.9",
+    "typescript": "^3.7.5"
   },
   "devDependencies": {},
   "scripts": {
